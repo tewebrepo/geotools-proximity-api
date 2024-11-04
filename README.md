@@ -1,7 +1,3 @@
-Here's an updated `README.md` with detailed information on the codebase structure and file descriptions based on the Table of Contents provided.
-
----
-
 # NestJS GeoTools API with Redis Caching
 
 This project is a NestJS API for finding nearby cities based on latitude and longitude, with Redis integration for caching. The application structure and services are designed to support fast data retrieval and a scalable architecture.
