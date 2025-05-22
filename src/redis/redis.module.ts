@@ -11,7 +11,8 @@ import Redis from 'ioredis';
           host: configService.get<string>('redis.host'),
           port: configService.get<number>('redis.port'),
           password: configService.get<string>('redis.password'),
-          retryStrategy: (times) => (times > 3 ? null : Math.min(times * 1000, 3000)),
+          retryStrategy: (times) =>
+            times > 3 ? null : Math.min(times * 1000, 3000),
         });
       },
       inject: [ConfigService],

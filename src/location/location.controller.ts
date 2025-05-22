@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { LocationService } from './location.service';
+import { BaseLocationService } from './interfaces/base-location.service';
 import { NearbyQueryDto } from './dto/nearby-query.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
@@ -9,7 +9,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @Controller('locations')
 @ApiTags('locations')
 export class LocationController {
-  constructor(private readonly locationService: LocationService) {}
+  constructor(private readonly locationService: BaseLocationService) {}
 
   /**
    * GET /locations/nearby - Find nearby locations.

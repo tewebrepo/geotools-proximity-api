@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
-import { LocationService } from './location.service';
+import { ConfigModule } from '@nestjs/config';
 import { LocationController } from './location.controller';
-import { RedisModule } from '../redis/redis.module';
+import { LocationServiceFactory } from './location.service.factory';
+import { BaseLocationService } from './interfaces/base-location.service';
 
-/**
- * LocationModule - Handles location-related operations.
- */
 @Module({
-  imports: [RedisModule],
+  imports: [ConfigModule],
   controllers: [LocationController],
-  providers: [LocationService],
-  exports: [LocationService],
+  providers: [
+    LocationServiceFactory,
+    {
+      provide: BaseLocationService,
+      useFactory: async (factory: LocationServiceFactory) => {
+        return await factory.createLocationService();
+      },
+      inject: [LocationServiceFactory],
+    },
+  ],
 })
 export class LocationModule {}

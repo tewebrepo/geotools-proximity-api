@@ -1,13 +1,11 @@
 import Redis from 'ioredis';
-import { existsSync, readFileSync } from 'node:fs';
-import path from 'node:path';
+import { readFileSync } from 'node:fs';
+import { checkRedisSeeding } from '../src/utils/seeding.utils';
 import 'dotenv/config';
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD || '',
-});
+// Parse command line arguments
+const args = process.argv.slice(2);
+const forceSeeding = args.includes('--force');
 
 interface City {
   city: string;
@@ -23,27 +21,39 @@ interface City {
 }
 
 async function seedRedis() {
-  const filePath = process.env.BIGCITIES_FILE_PATH || '../data/big_cities.json';
-  const absolutePath = filePath;
+  const filePath = process.env.BIGCITIES_FILE_PATH || 'data/big_cities.json';
+  const redis = new Redis({
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: parseInt(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD || '',
+  });
 
   try {
-    if (!existsSync(absolutePath)) {
-      console.error(`❌ File not found: ${absolutePath}`);
-      process.exit(1);
+    // Check if seeding is necessary
+    if (!forceSeeding) {
+      console.log('🔍 Checking if seeding is necessary...');
+      const needsSeeding = await checkRedisSeeding(redis, filePath);
+      if (!needsSeeding) {
+        console.log('✨ Redis data is already up to date');
+        redis.disconnect();
+        return;
+      }
     }
 
-    console.log(`📂 Reading data from ${absolutePath}...`);
-    const data = readFileSync(absolutePath, 'utf-8');
-
-    console.log('📊 Parsing JSON data...');
-    const cities: City[] = JSON.parse(data);
+    // Read and parse data
+    console.log(`📂 Reading data from ${filePath}...`);
+    const fileContent = readFileSync(filePath, 'utf-8');
+    const cities: City[] = JSON.parse(fileContent);
 
     console.log(`🚀 Starting to seed ${cities.length} cities into Redis...`);
 
     for (const city of cities) {
       try {
-        const cityId = `${city.iso2.toLowerCase()}_${city.admin_name}_${city.city_ascii}`
-          .replace(/[^a-z0-9_]/gi, '').toLowerCase();
+        const cityId = `${city.iso2.toLowerCase()}_${city.admin_name}_${
+          city.city_ascii
+        }`
+          .replace(/[^a-z0-9_]/gi, '')
+          .toLowerCase();
 
         // Set city data in Redis
         await redis.set(`loc:${cityId}`, JSON.stringify(city));
@@ -67,5 +77,5 @@ async function seedRedis() {
 
 seedRedis().catch((error) => {
   console.error('❌ Unexpected error during seeding:', error);
-  redis.disconnect();
+  process.exit(1);
 });

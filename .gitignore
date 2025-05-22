@@ -27,3 +27,4 @@ Dockerfile*
 .idea
 .vscode
 *.swp
+data/locations.db

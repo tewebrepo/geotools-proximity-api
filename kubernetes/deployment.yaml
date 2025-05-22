@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geotools-api
+  labels:
+    app: geotools-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: geotools-api
+  template:
+    metadata:
+      labels:
+        app: geotools-api
+    spec:
+      containers:
+      - name: geotools-api
+        image: geotools-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: geotools-config
+              key: PORT
+        - name: STORAGE_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: geotools-config
+              key: STORAGE_MODE
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: geotools-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: geotools-config
+              key: REDIS_PORT
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: geotools-secrets
+              key: REDIS_PASSWORD
+        - name: SQLITE_PATH
+          value: "/app/data/locations.db"
+        - name: BIGCITIES_FILE_PATH
+          value: "/app/data/big_cities.json"
+        volumeMounts:
+        - name: sqlite-data
+          mountPath: /app/data
+        - name: cities-data
+          mountPath: /app/data/big_cities.json
+          subPath: big_cities.json
+      volumes:
+      - name: sqlite-data
+        persistentVolumeClaim:
+          claimName: geotools-sqlite-data
+      - name: cities-data
+        configMap:
+          name: geotools-cities-data
