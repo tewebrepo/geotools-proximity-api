@@ -8,9 +8,25 @@
 ## Build and Deploy
 
 1. Build the Docker image:
-```bash
-docker build -t geotools-api:latest .
-```
+   The repository doesn't ship with a `Dockerfile`. If you don't already have one,
+   create it in the project root before running `docker build`. Below is a minimal
+   example:
+
+   ```Dockerfile
+   FROM node:18
+   WORKDIR /app
+   COPY package*.json ./
+   RUN npm install --only=production
+   COPY . .
+   RUN npm run build
+   CMD ["node", "dist/main"]
+   ```
+
+   After creating the file, build the image:
+
+   ```bash
+   docker build -t geotools-api:latest .
+   ```
 
 2. Create base64 encoded cities data:
 ```bash
