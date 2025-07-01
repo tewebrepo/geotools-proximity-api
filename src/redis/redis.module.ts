@@ -8,9 +8,9 @@ import Redis from 'ioredis';
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
         return new Redis({
-          host: configService.get<string>('redis.host'),
-          port: configService.get<number>('redis.port'),
-          password: configService.get<string>('redis.password'),
+          host: configService.get<string>('storage.redis.host'),
+          port: configService.get<number>('storage.redis.port'),
+          password: configService.get<string>('storage.redis.password'),
           retryStrategy: (times) =>
             times > 3 ? null : Math.min(times * 1000, 3000),
         });
