@@ -84,7 +84,7 @@ describe('LocationController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider('RedisClient')
+      .overrideProvider('REDIS_CLIENT')
       .useValue(new RedisMock())
       .compile();
 
